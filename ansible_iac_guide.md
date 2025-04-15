@@ -32,14 +32,14 @@ If it takes 3 days to set up IaC but only 5 minutes to configure manually and it
 ## Configuration Management vs. Orchestration
 
 ### Configuration Management
-"Set up and maintain individual machines"
+How things are set up.
 
 - Change settings or install software on machines.
 - **Example**: "Install NGINX on this server"
 - **Tools**: Ansible, Puppet, Chef
 
 ### Orchestration
-"Coordinate multiple machines to work together"
+How tasks are ordered and coordinated.
 
 - Deploy full infrastructure and services in order.
 - **Example**: "Deploy app, set up load balancer, start services"
