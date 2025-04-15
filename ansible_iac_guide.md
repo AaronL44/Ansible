@@ -141,7 +141,7 @@ Results should display:
 ---
 
 ## Ansible Setup
-## Open a New GitBahs Window
+## Open a New GitBash Window
 
 Inside this window you are going to find your AWS private key which is the ".pem" file.
 
