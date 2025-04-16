@@ -1,0 +1,28 @@
+---
+
+# Name of the play
+- name: Install nginx play
+  # Where do you want to install or run this play
+  hosts: web
+
+  # Gather facts? Dont need to print them out as only one target node
+  gather_facts: true
+
+  # Instructions - known as "tasks"
+  tasks:
+
+  # run apt update
+  - name: Update all packages
+    ansible.builtin.apt:
+       update_cache: yes
+
+# run apt upgrade
+  - name: Upgrade all packages
+    ansible.builtin.apt:
+       upgrade: dist
+
+# Install and run Nginx
+  - name: Install and run nginx web server on target node
+    # use package "nginx", need "state=present" means make sure package is present and installed
+    apt: pkg=nginx state=present
+

@@ -1,0 +1,23 @@
+---
+
+# Name of the play
+- name: Install mongodb server and run it
+  # Where do you want to install or run this play
+  hosts: mongodb
+  become: yes
+
+  # Gather facts? Dont need to print them out as only one target node
+  gather_facts: true
+
+  # Instructions - known as "tasks"
+  tasks:
+
+  # run apt update
+  - name: Update all packages
+    ansible.builtin.apt:
+       update_cache: yes
+
+  # run apt upgrade
+  - name: Upgrade all packages
+    ansible.builtin.apt:
+       upgrade: dist

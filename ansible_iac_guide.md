@@ -189,7 +189,7 @@ For best practice - Change the permissions of the file (as it includes a private
 
 Paste the ssh command from the target node (AWS Instance) found in the "connect" tab on the AWS page for the target instance.
 
-![AWS SSH COMMAND](imageS/AWS%20SSH%20COMMAND.png)
+![AWS SSH COMMAND](images/AWS%20SSH%20COMMAND.png)
 
 ```
 ssh -i ~/.ssh/TECH503-aaron-aws-key.pem ubuntu@<target-ip>
@@ -260,7 +260,7 @@ This command allows you to test the connection to the target node/s (all of them
 
 ---
 
-## Optional: Remove Color (Purple Text)
+## Optional: Remove Warning (Purple Text)
  
 The purple text (warning) that appears can be distracting. It is option to run the below command to remove it for future commands.
 
@@ -298,7 +298,57 @@ Example – Install NGINX on all web servers which you oculd do using the comman
 
 This installs NGINX on every instance in the web group at once.
 
-More adhoc commands you could test are:
+### Problem with Nginx verification fix:
+
+To verify nginx installed successfully run:
+
+`ansible web -a "nginx -v" --become`
+
+However, in my case it was stating the ec2-instance (target node) was "UNREACHABLE" as seen in the screenshot below. However, when runnning a simple `uname -a` command it returned the username of the target node. 
+
+This is inconsistent behavior — working on ansible web -a "uname -a" but failing on which nginx. That suggests Ansible is switching SSH users or keys mid-command.
+
+![nginx version unreachable](images/nginx%20version%20unreachable.png)
+
+#### How to fix:
+
+Move to the .ssh directory:
+
+````
+cd ~
+cd .ssh
+````
+
+Then list the files in full and show the permissions to verify the file ownership as well as owner permissions.
+
+`ls -al`
+
+![Owner of ssh private key file](images/Owner%20of%20ssh%20private%20key%20file.png)
+
+**Problem identified**! The key file TECH503-aaron-aws-key.pem is owned by root:root, but you're running Ansible as ubuntu. That’s why Ansible can’t read it **— permission denied.** 
+
+You need to change the owner of the file to ubuntu:ubuntu using the command:
+
+`sudo chown ubuntu:ubuntu <name of private key file>`
+
+![changed owner](images/changed%20owner.png)
+
+Now that the owner of the file is ubuntu, and ansible is being run by user ubuntu you are able to run the nginx verification command (this is because it is only readable by the owner).
+
+Move into the /etc/ansible directory again and run the verification command on the target node again:
+
+````
+cd /etc
+cd ansible
+ansible web -a "nginx -v" --become
+````
+
+If it prints a response like the one in the screenshot below then it has installed successfully
+
+![nginx installed verification](images/nginx%20installed%20verification.png)
+
+
+### More adhoc commands you could test are:
 
 
 `sudo ansible web -a "uname -a"` - Runs uname -a on all machines in the web group to show system info

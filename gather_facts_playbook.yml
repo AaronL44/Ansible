@@ -1,0 +1,10 @@
+---
+
+- name: Print facts
+# which hosts to run this play on
+  hosts: all
+  gather_facts: true
+  tasks:
+   - name: print facts
+     ansible.builtin.debug:
+       var: ansible_facts

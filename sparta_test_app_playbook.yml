@@ -1,0 +1,89 @@
+---
+
+# Name of the play
+- name: Install app dependencies and run app
+  # Where do you want to install or run this play
+  hosts: app
+  become: yes
+
+  # Gather facts? Dont need to print them out as only one target node
+  gather_facts: true
+
+  # Instructions - known as "tasks"
+  tasks:
+
+  # run apt update
+  - name: Update all packages
+    ansible.builtin.apt:
+       update_cache: yes
+
+  # run apt upgrade
+  - name: Upgrade all packages
+    ansible.builtin.apt:
+       upgrade: dist
+
+  # Install and run Nginx
+  - name: Install and run nginx web server on target node
+    # use package "nginx", need "state=present" means make sure package is present and installed
+    apt: pkg=nginx state=present
+
+  # Restart nginx
+  - name: Restart nginx on the target node
+    ansible.builtin.service:
+      name: nginx
+      state: restarted
+
+  # Enable nginx so that it runs from boot
+  - name: Enable nginx on the target node
+    ansible.builtin.service:
+      name: nginx
+      enabled: yes
+
+  # Clone the app code from github repo
+  - name: Clone Sparta app code from github
+    ansible.builtin.git:
+      repo: https://github.com/AaronL44/Sparta-app-code.git
+      dest: /home/ubuntu/sparta-app-code
+
+  # Download and run the Node.js 20.x setup script (adds the NodeSource repo)
+  - name: Add NodeSource setup script for Node.js 20.x
+    ansible.builtin.shell: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    args:
+      executable: /bin/bash
+
+  # Install Node.js from the newly added NodeSource repo
+  - name: Install Node.js
+    ansible.builtin.apt:
+        name: nodejs
+        state: present
+        update_cache: yes
+
+  # Install npm on target node
+  - name: Install app dependencies with npm
+    ansible.builtin.command: npm install
+    args:
+      chdir: /home/ubuntu/sparta-app-code/app
+    
+  # Install pm2 = process manager package for nodejs apps (allows app to start a sbackgorund process)
+  - name: Install pm2 globally
+    ansible.builtin.npm:
+      name: pm2
+      global: yes
+    args:
+      chdir: /home/ubuntu/sparta-app-code/app
+
+  # Kill any running node processes that could interfere with app running
+  - name: Kill all running pm2 processes
+    ansible.builtin.command: pm2 kill
+
+  # Start app using pm2 on target node
+  - name: Start the node.js app with pm2
+    ansible.builtin.command: pm2 start app.js
+    args:
+      chdir: /home/ubuntu/sparta-app-code/app
+  
+  # Set pm2 to run the app from system restart (instance startup)
+  - name: Enable pm2 startup
+    ansible.builtin.command: pm2 startup
+    args:
+      chdir: /home/ubuntu/sparta-app-code/app
